@@ -1,0 +1,1 @@
+allow init sysfs_pixelparts_leds:file setattr;
