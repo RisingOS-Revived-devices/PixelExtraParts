@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.UserHandle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -590,10 +591,10 @@ private suspend fun loadHiddenLauncherApps(context: Context): HiddenLauncherApps
         val manager = context.getSystemService(AxSandboxManager::class.java)
         val packageManager = context.packageManager
         val hiddenPackages = runCatching {
-            manager?.getHiddenPackages()?.toSet().orEmpty()
+            manager?.getHiddenPackages(UserHandle.myUserId())?.toSet().orEmpty()
         }.getOrDefault(emptySet())
         val packageNames = (runCatching {
-            manager?.getLockablePackages().orEmpty()
+            manager?.getLockablePackages(UserHandle.myUserId()).orEmpty()
         }.getOrDefault(emptyList()).ifEmpty {
             loadLaunchablePackages(packageManager)
         } + hiddenPackages).distinct()
@@ -634,8 +635,8 @@ private suspend fun setPackageHidden(
 ): Boolean = withContext(Dispatchers.IO) {
     val manager = context.getSystemService(AxSandboxManager::class.java) ?: return@withContext false
     runCatching {
-        manager.setPackageHidden(packageName, hidden)
-        manager.isPackageHidden(packageName) == hidden
+        manager.setPackageHidden(packageName, hidden, UserHandle.myUserId())
+        manager.isPackageHidden(packageName, UserHandle.myUserId()) == hidden
     }.getOrDefault(false)
 }
 
